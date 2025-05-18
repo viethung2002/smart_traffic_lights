@@ -138,83 +138,86 @@
  
  #include "sendTCP.h" // Đảm bảo include sendTCP.h để dùng SendTCP_Traffic
 
- static GstPadProbeReturn
- nvdsanalytics_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
- {
-     GstBuffer *buf = (GstBuffer *)info->data;
-     NvDsBatchMeta *batch_meta = gst_buffer_get_nvds_batch_meta(buf);
-     if (!batch_meta) {
-         g_printerr("No batch meta available\n");
-         return GST_PAD_PROBE_OK;
-     }
- 
-     for (NvDsMetaList *l_frame = batch_meta->frame_meta_list; l_frame != NULL; l_frame = l_frame->next) {
-         NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
-         if (!frame_meta) continue;
- 
-         std::stringstream out_string;
-         guint num_rects = 0, vehicle_count = 0, person_count = 0;
- 
-         // Tính toán số lượng đối tượng (giữ nguyên logic cũ)
-         for (NvDsMetaList *l_obj = frame_meta->obj_meta_list; l_obj != NULL; l_obj = l_obj->next) {
-             NvDsObjectMeta *obj_meta = (NvDsObjectMeta *)(l_obj->data);
-             if (!obj_meta) continue;
- 
-             if (obj_meta->class_id == PGIE_CLASS_ID_VEHICLE) {
-                 vehicle_count++;
-                 num_rects++;
-             }
-             if (obj_meta->class_id == PGIE_CLASS_ID_PERSON) {
-                 person_count++;
-                 num_rects++;
-             }
- 
-             for (NvDsMetaList *l_user_meta = obj_meta->obj_user_meta_list; l_user_meta != NULL; l_user_meta = l_user_meta->next) {
-                 NvDsUserMeta *user_meta = (NvDsUserMeta *)l_user_meta->data;
-                 if (user_meta && user_meta->base_meta.meta_type == NVDS_USER_OBJ_META_NVDSANALYTICS) {
-                     NvDsAnalyticsObjInfo *user_meta_data = (NvDsAnalyticsObjInfo *)user_meta->user_meta_data;
-                     if (user_meta_data && user_meta_data->dirStatus.length()) {
-                         g_print("object %lu moving in %s\n", obj_meta->object_id, user_meta_data->dirStatus.c_str());
-                     }
-                 }
-             }
-         }
- 
-         // Xử lý metadata từ nvdsanalytics (giữ nguyên logic cũ)
-         for (NvDsMetaList *l_user = frame_meta->frame_user_meta_list; l_user != NULL; l_user = l_user->next) {
-             NvDsUserMeta *user_meta = (NvDsUserMeta *)l_user->data;
-             if (user_meta && user_meta->base_meta.meta_type == NVDS_USER_FRAME_META_NVDSANALYTICS) {
-                 NvDsAnalyticsFrameMeta *meta = (NvDsAnalyticsFrameMeta *)user_meta->user_meta_data;
-                 if (meta) {
-                     for (std::pair<std::string, uint32_t> status : meta->objInROIcnt) {
-                         out_string << "Objs in ROI " << status.first << " = " << status.second;
-                     }
-                     for (std::pair<std::string, uint32_t> status : meta->objLCCumCnt) {
-                         out_string << " LineCrossing Cumulative " << status.first << " = " << status.second;
-                     }
-                     for (std::pair<std::string, uint32_t> status : meta->objLCCurrCnt) {
-                         out_string << " LineCrossing Current Frame " << status.first << " = " << status.second;
-                     }
-                     for (std::pair<std::string, bool> status : meta->ocStatus) {
-                         out_string << " Overcrowding status " << status.first << " = " << status.second;
-                     }
-                 }
-             }
-         }
- 
-         // In thông tin ra console (giữ nguyên)
-         g_print("Frame Number = %d of Stream = %d, Number of objects = %d "
-                 "Vehicle Count = %d Person Count = %d %s\n",
-                 frame_meta->frame_num, frame_meta->pad_index,
-                 num_rects, vehicle_count, person_count, out_string.str().c_str());
- 
-         // Thay logic gửi socket cũ bằng SendTCP_Traffic
-         uint32_t laneID = frame_meta->pad_index; // "of Stream" -> laneID
-         SendTCP_Traffic(laneID, vehicle_count);  // "Objs in ROI" -> vehicle_count (dùng vehicle_count thay vì tổng từ ROI)
-     }
- 
-     return GST_PAD_PROBE_OK;
- }
+static GstPadProbeReturn
+nvdsanalytics_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
+{
+    GstBuffer *buf = (GstBuffer *)info->data;
+    NvDsBatchMeta *batch_meta = gst_buffer_get_nvds_batch_meta(buf);
+    if (!batch_meta) {
+        g_printerr("No batch meta available\n");
+        return GST_PAD_PROBE_OK;
+    }
+
+    for (NvDsMetaList *l_frame = batch_meta->frame_meta_list; l_frame != NULL; l_frame = l_frame->next) {
+        NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
+        if (!frame_meta) continue;
+
+        std::stringstream out_string;
+        guint num_rects = 0, vehicle_count = 0, person_count = 0;
+        uint32_t obj_in_roi_count = 0; // Biến mới để lưu số lượng đối tượng trong ROI
+
+        // Tính toán số lượng đối tượng (giữ nguyên logic cũ để in thông tin)
+        for (NvDsMetaList *l_obj = frame_meta->obj_meta_list; l_obj != NULL; l_obj = l_obj->next) {
+            NvDsObjectMeta *obj_meta = (NvDsObjectMeta *)(l_obj->data);
+            if (!obj_meta) continue;
+
+            if (obj_meta->class_id == PGIE_CLASS_ID_VEHICLE) {
+                vehicle_count++;
+                num_rects++;
+            }
+            if (obj_meta->class_id == PGIE_CLASS_ID_PERSON) {
+                person_count++;
+                num_rects++;
+            }
+
+            for (NvDsMetaList *l_user_meta = obj_meta->obj_user_meta_list; l_user_meta != NULL; l_user_meta = l_user_meta->next) {
+                NvDsUserMeta *user_meta = (NvDsUserMeta *)l_user_meta->data;
+                if (user_meta && user_meta->base_meta.meta_type == NVDS_USER_OBJ_META_NVDSANALYTICS) {
+                    NvDsAnalyticsObjInfo *user_meta_data = (NvDsAnalyticsObjInfo *)user_meta->user_meta_data;
+                    if (user_meta_data && user_meta_data->dirStatus.length()) {
+                        g_print("object %lu moving in %s\n", obj_meta->object_id, user_meta_data->dirStatus.c_str());
+                    }
+                }
+            }
+        }
+
+        // Xử lý metadata từ nvdsanalytics để lấy objInROIcnt
+        for (NvDsMetaList *l_user = frame_meta->frame_user_meta_list; l_user != NULL; l_user = l_user->next) {
+            NvDsUserMeta *user_meta = (NvDsUserMeta *)l_user->data;
+            if (user_meta && user_meta->base_meta.meta_type == NVDS_USER_FRAME_META_NVDSANALYTICS) {
+                NvDsAnalyticsFrameMeta *meta = (NvDsAnalyticsFrameMeta *)user_meta->user_meta_data;
+                if (meta) {
+                    // Lấy số lượng đối tượng trong ROI
+                    for (const std::pair<std::string, uint32_t> &status : meta->objInROIcnt) {
+                        obj_in_roi_count += status.second; // Tổng hợp số lượng đối tượng từ tất cả ROI
+                        out_string << "Objs in ROI " << status.first << " = " << status.second << " ";
+                    }
+                    for (std::pair<std::string, uint32_t> status : meta->objLCCumCnt) {
+                        out_string << "LineCrossing Cumulative " << status.first << " = " << status.second << " ";
+                    }
+                    for (std::pair<std::string, uint32_t> status : meta->objLCCurrCnt) {
+                        out_string << "LineCrossing Current Frame " << status.first << " = " << status.second << " ";
+                    }
+                    for (std::pair<std::string, bool> status : meta->ocStatus) {
+                        out_string << "Overcrowding status " << status.first << " = " << status.second << " ";
+                    }
+                }
+            }
+        }
+
+        // In thông tin ra console (giữ nguyên)
+        g_print("Frame Number = %d of Stream = %d, Number of objects = %d "
+                "Vehicle Count = %d Person Count = %d %s\n",
+                frame_meta->frame_num, frame_meta->pad_index,
+                num_rects, vehicle_count, person_count, out_string.str().c_str());
+
+        // Gửi dữ liệu qua TCP với laneID và obj_in_roi_count
+        uint32_t laneID = frame_meta->pad_index; // "of Stream" -> laneID
+        SendTCP_Traffic(laneID, obj_in_roi_count); // Gửi obj_in_roi_count thay vì vehicle_count
+    }
+
+    return GST_PAD_PROBE_OK;
+}
  
  static gboolean
  bus_call (GstBus * bus, GstMessage * msg, gpointer data)
