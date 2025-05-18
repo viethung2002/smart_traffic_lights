@@ -206,10 +206,10 @@ nvdsanalytics_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer 
         }
 
         // // In thông tin ra console (giữ nguyên)
-        // g_print("Frame Number = %d of Stream = %d, Number of objects = %d "
-        //         "Vehicle Count = %d Person Count = %d %s\n",
-        //         frame_meta->frame_num, frame_meta->pad_index,
-        //         num_rects, vehicle_count, person_count, out_string.str().c_str());
+        g_print("Frame Number = %d of Stream = %d, Number of objects = %d "
+                "Vehicle Count = %d Person Count = %d %s %d\n",
+                frame_meta->frame_num, frame_meta->pad_index,
+                num_rects, vehicle_count, person_count, out_string.str().c_str(),obj_in_roi_count);
 
         // Gửi dữ liệu qua TCP với laneID và obj_in_roi_count
         uint32_t laneID = frame_meta->pad_index; // "of Stream" -> laneID

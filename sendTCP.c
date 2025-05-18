@@ -208,9 +208,15 @@ void HandleTCP_Ack(uint32_t laneID)
 // Hàm kiểm tra và gửi lại frame
 void CheckAndResend()
 {
-    static const uint32_t timeDefault = 45;
+    static const uint32_t timeDefault = 17;
     struct timespec currentTime;
 
+     if (laneTable[0].timeRemain <= 1)
+    {    
+        isUpdatingFromAI = true;
+        resendFlag = false;
+    }
+    
     if (!resendFlag)
         return;
 
@@ -234,11 +240,7 @@ void CheckAndResend()
         }
     }
 
-    if (laneTable[0].timeRemain <= 1)
-    {    
-        isUpdatingFromAI = true;
-        resendFlag = false;
-    }
+   
     // Gửi lại cho các lane chưa nhận ACK
     for (int i = 0; i < MAX_LANES; i++)
     {
@@ -316,11 +318,11 @@ void *receiveThread(void *arg)
                 CAN_RecvFrameHandler(&lastRecvBuffer[8], lastRecvBuffer[12], &lastRecvBuffer[13]);
 
             // In ra dữ liệu nhận được (cho debug)
-            printf("Received packet: ");
-            for (int i = 0; i < bytesReceived; i++) {
-                printf("%02x ", buffer[i]);
-            }
-            printf("\n");
+            // printf("Received packet: ");
+            // for (int i = 0; i < bytesReceived; i++) {
+            //     printf("%02x ", buffer[i]);
+            // }
+            // printf("\n");
             pthread_mutex_unlock(&recvMutex);
         }
         else if (bytesReceived == 0)
