@@ -28,9 +28,10 @@ display-font-size=12
 ## Per stream configuration
 [roi-filtering-stream-0]
 #enable or disable following feature
+
 enable=1
 #ROI to filter select objects, and remove from meta data
-roi-RF=280;150;      1200;150;        1200;400;              150;400
+roi-RF=250;500;      1250;485;         1820;1070  ;10;1070  ;10;800
 #remove objects in the ROI
 inverse-roi=0
 class-id=0;1
@@ -39,9 +40,8 @@ class-id=0;1
 #enable or disable following feature
 enable=1
 #ROI to filter select objects, and remove from meta data
-roi-RF=280;150;      1200;150;        1200;400;              150;400
-#remove objects in the ROI
-inverse-roi=0
+roi-RF=250;500;      1250;485;         1820;1070  ;10;1070  ;10;800
+#remove objects in the ROIinverse-roi=0
 class-id=0;1
 
 
@@ -50,7 +50,7 @@ class-id=0;1
 #enable or disable following feature
 enable=1
 #ROI to filter select objects, and remove from meta data
-roi-RF=280;150;      1200;150;        1200;400;              150;400
+roi-RF=250;500;      1250;485;         1820;1070  ;10;1070  ;10;800
 #remove objects in the ROI
 inverse-roi=0
 class-id=0;1
@@ -60,7 +60,7 @@ class-id=0;1
 #enable or disable following feature
 enable=1
 #ROI to filter select objects, and remove from meta data
-roi-RF=280;150;      1200;150;        1200;400;              150;400
+roi-RF=250;500;      1250;485;         1820;1070  ;10;1070  ;10;800
 #remove objects in the ROI
 inverse-roi=0
 class-id=0;1

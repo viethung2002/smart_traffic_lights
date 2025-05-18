@@ -176,8 +176,8 @@ void HandleTCP_Request(uint32_t laneID)
     }
     ackCount = 0;
     resendFlag = true;
-    printf("Received REQUEST for Lane %u, sending nextColor=%u, timeCounter=%u\n",
-           laneID, lane->nextColor, lane->timeCounter);
+    // printf("Received REQUEST for Lane %u, sending nextColor=%u, timeCounter=%u\n",
+        //    laneID, lane->nextColor, lane->timeCounter);
 }
 
 void HandleTCP_Ack(uint32_t laneID)
@@ -201,7 +201,7 @@ void HandleTCP_Ack(uint32_t laneID)
             resendFlag = false;
         
 
-        printf("Received ACK for Lane %u, updated currentColor=%u\n", laneID, lane->currentColor);
+        // printf("Received ACK for Lane %u, updated currentColor=%u\n", laneID, lane->currentColor);
     }
 }
 
@@ -230,7 +230,7 @@ void CheckAndResend()
                 lane->timeCounter = timeDefault + yellowTime;
             if (lane->nextColor == LEDColor_GREEN)
                 lane->timeCounter = timeDefault;
-            printf("TimeRemain <= 2s, sent default 45s to Lane %u\n", i + 1);
+            // printf("TimeRemain <= 2s, sent default 45s to Lane %u\n", i + 1);
         }
     }
 
@@ -316,11 +316,11 @@ void *receiveThread(void *arg)
                 CAN_RecvFrameHandler(&lastRecvBuffer[8], lastRecvBuffer[12], &lastRecvBuffer[13]);
 
             // In ra dữ liệu nhận được (cho debug)
-            // printf("Received packet: ");
-            // for (int i = 0; i < bytesReceived; i++) {
-            //     printf("%02x ", buffer[i]);
-            // }
-            // printf("\n");
+            printf("Received packet: ");
+            for (int i = 0; i < bytesReceived; i++) {
+                printf("%02x ", buffer[i]);
+            }
+            printf("\n");
             pthread_mutex_unlock(&recvMutex);
         }
         else if (bytesReceived == 0)
