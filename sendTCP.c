@@ -76,8 +76,9 @@ static void SendTCP_SendFrame(uint8_t laneID, COMMAND_CODE cmd, LED_COLOR ledCol
     // ID
     pkt[8] = 0;
     pkt[9] = 0;
-    pkt[10] = _myCANID & 0xFF;
-    pkt[11] = laneID & 0xFF;
+    pkt[10] = laneID & 0xFF;
+    pkt[11] = _myCANID & 0xFF;
+
     // DLC
     pkt[12] = 8;
     // Data
@@ -98,7 +99,7 @@ static void SendTCP_SendFrame(uint8_t laneID, COMMAND_CODE cmd, LED_COLOR ledCol
 
 static uint32_t calculateTimeCounter(uint32_t vehicleCount)
 {
-    const uint32_t SECONDS_PER_VEHICLE = 2; // 2 giây cho mỗi phương tiện
+    const uint32_t SECONDS_PER_VEHICLE = 5; // 2 giây cho mỗi phương tiện
     const uint32_t MIN_TIME = 15;
     const uint32_t MAX_TIME = 90;
 
@@ -216,7 +217,8 @@ void CheckAndResend()
     clock_gettime(CLOCK_REALTIME, &currentTime);
 
     // Kiểm tra thời gian còn lại của Lane 1 (đồng bộ cho cả 4)
-    if (laneTable[0].timeRemain <= 2 && ackCount < MAX_LANES)
+    
+    if (laneTable[0].timeRemain <= 2  && ackCount < MAX_LANES)
     {
         // Gửi thời gian mặc định 45s cho cả 4 lane
         for (int i = 0; i < MAX_LANES; i++)
@@ -228,7 +230,7 @@ void CheckAndResend()
                 lane->timeCounter = timeDefault + yellowTime;
             if (lane->nextColor == LEDColor_GREEN)
                 lane->timeCounter = timeDefault;
-            // printf("TimeRemain <= 2s, sent default 45s to Lane %u\n", i + 1);
+            printf("TimeRemain <= 2s, sent default 45s to Lane %u\n", i + 1);
         }
     }
 
@@ -405,7 +407,7 @@ void SendTCP_Traffic(uint32_t laneID, uint32_t vehicleCount)
 
     lane->vehicleCount = vehicleCount;
 
-    printf("Updated Lane %u: vehicleCount=%u, timeCounter=%u\n", laneID, vehicleCount, lane->timeCounter);
+    // printf("Updated Lane %u: vehicleCount=%u, timeCounter=%u\n", laneID, vehicleCount, lane->timeCounter);
 }
 
 // Hàm gửi lệnh mở/đóng CAN (chờ phản hồi)
@@ -444,7 +446,7 @@ bool SendTCP_OpenCloseCAN(bool isOpen)
 // {
 
 //     // Khởi tạo socket
-//     initialize_socket();
+//     initialize_socketcc();
 
 //     sleep(2);
 //     bool result = SendTCP_OpenCloseCAN(true);
@@ -455,13 +457,13 @@ bool SendTCP_OpenCloseCAN(bool isOpen)
 //     while (1)
 //     {
 
-//         ReceiveTrafficFromAI(0x01, 5); // 5 phương tiện
+//         SendTCP_Traffic(0x01, 5); // 5 phương tiện
 //         usleep(50000);                 // 50ms, mô phỏng AI gọi nhanh
-//         ReceiveTrafficFromAI(0x02, 5); // 5 phương tiện
+//         SendTCP_Traffic(0x02, 5); // 5 phương tiện
 //         usleep(50000);                 // 50ms, mô phỏng AI gọi nhanh
-//         ReceiveTrafficFromAI(0x03, 5); // 5 phương tiện
+//         SendTCP_Traffic(0x03, 5); // 5 phương tiện
 //         usleep(50000);                 // 50ms, mô phỏng AI gọi nhanh
-//         ReceiveTrafficFromAI(0x04, 5); // 5 phương tiện
+//         SendTCP_Traffic(0x04, 5); // 5 phương tiện
 //         usleep(50000);                 // 50ms, mô phỏng AI gọi nhanh
 //     }
 
