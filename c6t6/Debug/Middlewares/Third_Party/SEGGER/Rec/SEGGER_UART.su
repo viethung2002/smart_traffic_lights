@@ -1,0 +1,7 @@
+../Middlewares/Third_Party/SEGGER/Rec/SEGGER_UART.c:98:13:_cbOnUARTRx	16	static
+../Middlewares/Third_Party/SEGGER/Rec/SEGGER_UART.c:108:12:_cbOnUARTTx	8	static
+../Middlewares/Third_Party/SEGGER/Rec/SEGGER_UART.c:123:6:SEGGER_UART_init	4	static
+../Middlewares/Third_Party/SEGGER/Rec/SEGGER_UART.c:127:6:HIF_UART_WaitForTxEnd	0	static
+../Middlewares/Third_Party/SEGGER/Rec/SEGGER_UART.c:134:6:USART1_IRQHandler	16	static
+../Middlewares/Third_Party/SEGGER/Rec/SEGGER_UART.c:163:6:HIF_UART_EnableTXEInterrupt	0	static
+../Middlewares/Third_Party/SEGGER/Rec/SEGGER_UART.c:167:6:HIF_UART_Init	8	static

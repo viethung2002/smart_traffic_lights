@@ -1,0 +1,14 @@
+../Core/Src/main.c:492:6:TASK_ManagerPoint	40	static
+../Core/Src/main.c:481:6:TASK_LEDColor_Control	16	static
+../Core/Src/main.c:545:6:CAN_RequestCallback	8	static
+../Core/Src/main.c:539:6:CAN_CycleCallback	16	static
+../Core/Src/main.c:271:6:SystemClock_Config	80	static,ignoring_inline_asm
+../Core/Src/main.c:152:5:main	48	static,ignoring_inline_asm
+../Core/Src/main.c:413:6:LED7_Display	24	static
+../Core/Src/main.c:459:6:TASK_LED7_DisplayValue	16	static
+../Core/Src/main.c:434:6:LED_SetColor	16	static
+../Core/Src/main.c:443:6:CAN_SendMessage	12	static
+../Core/Src/main.c:550:6:HAL_CAN_RxFifo0MsgPendingCallback	40	static,ignoring_inline_asm
+../Core/Src/main.c:590:6:StartDefaultTask	0	static
+../Core/Src/main.c:607:6:HAL_TIM_PeriodElapsedCallback	0	static
+../Core/Src/main.c:623:6:Error_Handler	0	static,ignoring_inline_asm
